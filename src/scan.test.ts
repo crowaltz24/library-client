@@ -25,6 +25,21 @@ describe('scanned book workflow', () => {
     expect((await listPending())).toHaveLength(1)
   })
 
+  it('preserves the uploaded file name when sending image data to the backend', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ detected: true, books: [] }), { status: 200 }))
+    const file = new File(['image-data'], 'upload.jpg', { type: 'image/jpeg' })
+
+    await identifyImage(file)
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    const requestInit = fetchMock.mock.calls[0][1] as RequestInit
+    const formData = requestInit.body as FormData
+    expect(formData.get('image')).toBeInstanceOf(File)
+    expect((formData.get('image') as File).name).toBe('upload.jpg')
+
+    fetchMock.mockRestore()
+  })
+
   it('surfaces identification errors without persisting a book', async () => {
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(JSON.stringify({ detail: 'No barcode found' }), { status: 400 }))
     await expect(identifyImage(new Blob(['image']))).rejects.toThrow('No barcode found')

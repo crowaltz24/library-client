@@ -27,8 +27,9 @@ export interface IdentificationResponse {
   books: IdentifiedBook[]
 }
 
-export function identifyImage(image: Blob): Promise<IdentificationResponse> {
+export function identifyImage(image: Blob, filename?: string): Promise<IdentificationResponse> {
   const form = new FormData()
-  form.append('image', image, 'book-capture.jpg')
+  const resolvedFilename = filename || (image instanceof File ? image.name : 'book-capture.jpg')
+  form.append('image', image, resolvedFilename)
   return request<IdentificationResponse>('/api/scan/identify', { method: 'POST', body: form })
 }
