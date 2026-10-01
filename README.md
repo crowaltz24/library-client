@@ -50,3 +50,9 @@ Open the client URL and:
 9. Verify the change reaches the server by syncing another client or checking the backend's library endpoint.
 
 The client sends the backend's exact auth and sync shapes: `{username, password}`, bearer tokens, `{mutations: [...]}`, and `/api/sync/pull?since=<revision>`. Failed sync requests leave outbox records intact for retry; server pull/push results are authoritative and the successful pull revision is stored locally.
+
+## Scan Book
+
+From the library, choose `Scan book`. The browser requests camera permission only after scanning starts. When supported, `BarcodeDetector` checks ISBN-compatible barcodes locally; otherwise the user can capture a still image manually. The captured image is sent once to `POST /api/scan/identify`, and the returned metadata is shown for confirmation. Nothing is saved until `Add to library` is pressed. Confirmation writes IndexedDB and the existing outbox, so it remains usable offline after local metadata is available. Camera tracks are stopped when scanning stops, after capture, after confirmation, and when leaving the screen.
+
+Camera hardware is intentionally not covered by automated tests. The scan API, identification errors, confirmation persistence, and outbox behavior are tested with mocked boundaries. Manual verification requires a browser with camera permission and a real ISBN barcode.
